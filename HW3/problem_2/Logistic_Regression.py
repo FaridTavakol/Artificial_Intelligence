@@ -129,11 +129,11 @@ class LogisticRegression(object):
         Returns:
         1) performance : dict
         Accuracy, sensitivity (recall), specificity, postitive predictive 
-        value (PPV, precision), negative predictive value (NPV), false 
-        negative rate (FNR, "miss rate"), false positive rate (FPR, "fall out")
+        value (Pre, precision), negative predictive value (NPV), false 
+        negative rate (FNR, "miss rate"), false positive rate (FPR, "fall out"), and f-measure
         """
         # Initialize
-        TP, TN, FP, FN, P, N = 0, 0, 0, 0, 0, 0
+        TP, TN, FP, FN, P, N, fmeasure = 0, 0, 0, 0, 0, 0, 0
 
         for idx, test_sample in enumerate(y_test):
 
@@ -153,14 +153,16 @@ class LogisticRegression(object):
         accuracy = (TP + TN) / (P + N)
         sensitivity = TP / P
         specificity = TN / N
-        PPV = TP / (TP + FP)
+        Pre = TP / (TP + FP)
+        Rec = TP / (TP + FN)
         NPV = TN / (TN + FN)
         FNR = 1 - sensitivity
         FPR = 1 - specificity
+        fmeasure = (2 * Pre * Rec)/(Pre + Rec)
 
         performance = {'Accuracy': accuracy, 'Sensitivity': sensitivity,
-                       'Specificity': specificity, 'Precision': PPV,
-                       'NPV': NPV, 'FNR': FNR, 'FPR': FPR}
+                       'Specificity': specificity, 'Precision': Pre,
+                       'NPV': NPV, 'FNR': FNR, 'FPR': FPR, 'Rec': Rec, 'fmeasure': fmeasure}
 
         return performance
 
@@ -186,7 +188,7 @@ class LogisticRegression(object):
         zs = self.weights[0] + np.dot(X_test, self.weights[1:])
         probs = np.array([logistic_func(i) for i in zs])
 
-        plt.figure()
+        plt.figure('Predicion Plot')
         plt.plot(np.arange(-10, 10, 0.1),
                  logistic_func(np.arange(-10, 10, 0.1)))
         colors = ['r', 'b']
@@ -214,7 +216,7 @@ class LogisticRegression(object):
         matplotlib figure       
 
         """
-        plt.figure()
+        plt.figure('Cost Plot')
         plt.plot(np.arange(1, self.iterationsPerformed + 1),
                  self.costs, marker='.')
         plt.xlabel('Iterations')
@@ -262,6 +264,7 @@ class LogisticRegression(object):
                         marker='o', label=cl, s=30)
 
         preds = preds.reshape(xx.shape)
+        # plt.figure('Decision Region Plot')
         plt.contourf(xx, yy, preds, alpha=0.3)
         plt.legend(loc='best')
         plt.xlabel('$x_1$', size='x-large')
